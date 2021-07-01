@@ -1,0 +1,25 @@
+{
+  "name": "12-employeeTracker",
+  "version": "1.0.0",
+  "description": "Keep track of those pesky employees, so they don't learn what a work/life balance actually is.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mmonyok/employeeTracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mmonyok/employeeTracker/issues"
+  },
+  "homepage": "https://github.com/mmonyok/employeeTracker#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^8.1.1",
+    "mysql": "^2.18.1"
+  }
+}

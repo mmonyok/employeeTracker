@@ -1,5 +1,43 @@
+// ask about default for init() switch statement.
+// Why can't i have a separate connection.js file with raw sql instead of only with sequelize.
+
 const inquirer = require('inquirer');
+// const connection = require('./config/connection');
 const cTable = require('console.table');
+
+// This is all the code for connecting to the MySQL database.
+const mysql = require('mysql');
+require('dotenv').config();
+
+const connection = mysql.createConnection({
+    host: process.env.DB_HOST,
+    port: 3306,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+});
+
+connection.connect((err) => {
+    if (err) {
+        throw Error(err);
+    };
+    console.log(`connected as id ${connection.threadId}`);
+    init();
+});
+
+/* const util = require('util');
+let dptPromise = util.promisify(connection.query);
+async function test() {
+    let response = await dptPromise('SELECT * FROM department;');
+    console.table(response);
+    // response.forEach(() => {
+    //     array.push(response.department);
+    // });
+    // return array;
+} */
+
+// test();
+
 
 // Main menu prompt; this will always populate after every prompt is complete.
 const menu = [
@@ -7,7 +45,7 @@ const menu = [
         type: 'list',
         message: "What would you like to do?",
         choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Role', 'Add Department', 'Add Role', 'Add Employee', 'Update Employee Role', 'Quit'],
-        name: 'menu',
+        name: 'menuChoice',
     }
 ];
 
@@ -15,7 +53,28 @@ const empByDpt = [
     {
         type: 'list',
         message: "Which department's employees would you like to view?",
-        choices: ['Department List'],
+        choices: ['Sales', 'Engineering', 'Finance', 'Legal'],
+        /* choices: async function () {
+            try {
+                console.log('hello');
+                let array = [];
+                let array = [
+                    { d_id: 1, department: 'Sales' },
+                    { d_id: 2, department: 'Engineering' },
+                    { d_id: 3, department: 'Finance' },
+                    { d_id: 4, department: 'Legal' },
+                ];
+                return array;
+                response = await dptPromise('SELECT * FROM department;');
+                response.forEach(() => {
+                    array.push(response.department);
+                });
+                return array;
+            } catch (err) {
+                console.log(err);
+            }
+            // console.log(typeof response);
+        }, */
         name: 'viewDpt',
     }
 ];
@@ -24,7 +83,7 @@ const empByRole = [
     {
         type: 'list',
         message: "Which Role would you like to view?",
-        choices: ['Role List'],
+        choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Accountant', 'Legal Team Lead', 'Lawyer'],
         name: 'viewRole',
     }
 ];
@@ -91,3 +150,57 @@ const updateRole = [
     }
 ]
 // console.log("Updated {Employee Name}'s role.")
+
+function viewAllEmployees() {
+    connection.query('SELECT id, first_name, last_name, title, department, salary FROM employee INNER JOIN role ON employee.role_id = role.r_id INNER JOIN department ON role.department_id = department.d_id;', (err, res) => {
+        if (err) throw err;
+        console.log(res);
+        console.table(res);
+        init();
+    });
+};
+
+function viewEmployeeByDpt() {
+    inquirer.prompt(empByDpt).then(res => {
+        const dpt = res.viewDpt;
+        connection.query(`SELECT id, first_name, last_name, title, salary FROM employee INNER JOIN role ON employee.role_id = role.r_id INNER JOIN department ON role.department_id = department.d_id WHERE department.department = '${dpt}';`, (err, res) => {
+            if (err) throw err;
+            console.table(res);
+            init();
+        });
+    });
+};
+
+function viewEmployeeByRole() {
+    inquirer.prompt(empByRole).then(res => {
+        const role = res.viewRole;
+        console.log(role);
+        connection.query(`SELECT id, first_name, last_name, salary, department FROM employee INNER JOIN role ON employee.role_id = role.r_id INNER JOIN department ON role.department_id = department.d_id WHERE role.title = '${role}';`, (err, res) => {
+            if (err) throw err;
+            console.table(res);
+            init();
+        });
+    })
+}
+
+function init() {
+    inquirer.prompt(menu).then(res => {
+        switch (res.menuChoice) {
+            case 'View All Employees':
+                console.log("You chose 'View All Employees'.");
+                viewAllEmployees();
+                break;
+            case 'View All Employees By Department':
+                console.log("You chose to view employees by department");
+                viewEmployeeByDpt();
+                break;
+            case 'View All Employees By Role':
+                console.log("You chose to view employees by role.")
+                viewEmployeeByRole();
+                break;
+            case 'Quit':
+                console.log("You chose 'Quit.'")
+                connection.end();
+        }
+    })
+};

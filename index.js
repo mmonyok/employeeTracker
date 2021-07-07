@@ -88,13 +88,6 @@ const empByRole = [
     }
 ];
 
-// Would like to add a question asking if they want to add another department.
-const addDpt = [
-    {
-        message: "What is the name of the new department?",
-        name: 'dptName',
-    }
-];
 // console.log("Added {dptName} as a department.")
 
 // Would like to add a question asking if they want to add another role.
@@ -152,7 +145,7 @@ const updateRole = [
 // console.log("Updated {Employee Name}'s role.")
 
 function viewAllEmployees() {
-    connection.query('SELECT id, first_name, last_name, title, department, salary FROM employee INNER JOIN role ON employee.role_id = role.r_id INNER JOIN department ON role.department_id = department.d_id;', (err, res) => {
+    connection.query('SELECT id, first_name, last_name, title, department, salary FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id;', (err, res) => {
         if (err) throw err;
         console.log(res);
         console.table(res);
@@ -163,7 +156,7 @@ function viewAllEmployees() {
 function viewEmployeeByDpt() {
     inquirer.prompt(empByDpt).then(res => {
         const dpt = res.viewDpt;
-        connection.query(`SELECT id, first_name, last_name, title, salary FROM employee INNER JOIN role ON employee.role_id = role.r_id INNER JOIN department ON role.department_id = department.d_id WHERE department.department = '${dpt}';`, (err, res) => {
+        connection.query(`SELECT id, first_name, last_name, title, salary FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id WHERE departments.department = '${dpt}';`, (err, res) => {
             if (err) throw err;
             console.table(res);
             init();
@@ -175,11 +168,24 @@ function viewEmployeeByRole() {
     inquirer.prompt(empByRole).then(res => {
         const role = res.viewRole;
         console.log(role);
-        connection.query(`SELECT id, first_name, last_name, salary, department FROM employee INNER JOIN role ON employee.role_id = role.r_id INNER JOIN department ON role.department_id = department.d_id WHERE role.title = '${role}';`, (err, res) => {
+        connection.query(`SELECT id, first_name, last_name, salary, department FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id WHERE roles.title = '${role}';`, (err, res) => {
             if (err) throw err;
             console.table(res);
             init();
         });
+    })
+}
+
+function addDepartment() {
+    inquirer.prompt([
+        {
+            message: "What is the name of the new department?",
+            name: 'dptName',
+        }
+    ]).then(res => {
+        connection.query(`INSERT INTO departments (department) VALUES ('${res.dptName}');`);
+        console.log(`Added ${res.dptName} as a department.`);
+        init();
     })
 }
 
@@ -197,6 +203,10 @@ function init() {
             case 'View All Employees By Role':
                 console.log("You chose to view employees by role.")
                 viewEmployeeByRole();
+                break;
+            case 'Add Department':
+                console.log("You chose to add a department.");
+                addDepartment();
                 break;
             case 'Quit':
                 console.log("You chose 'Quit.'")

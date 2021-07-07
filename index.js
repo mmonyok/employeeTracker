@@ -1,10 +1,12 @@
 const inquirer = require('inquirer');
+const cTable = require('console.table');
 
+// Main menu prompt; this will always populate after every prompt is complete.
 const menu = [
     {
         type: 'list',
         message: "What would you like to do?",
-        choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Remove Employee', 'Update Employee Role', 'Update Employee Manager', 'View All Roles', 'Add Role', 'Remove Role'],
+        choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Role', 'Add Department', 'Add Role', 'Add Employee', 'Update Employee Role', 'Quit'],
         name: 'menu',
     }
 ];
@@ -18,81 +20,25 @@ const empByDpt = [
     }
 ];
 
-/* const empByMgr = [
+const empByRole = [
     {
         type: 'list',
-        message: "Which manager's employees would you like to view?",
-        choices: ['Manager List'],
-        name: 'viewMgr',
-    }
-]; */
-
-const addEmp = [
-    {
-        message: "What is the employee's first name?",
-        name: 'empFirstName',
-    },
-    {
-        message: "What is the employee's last name?",
-        name: 'empLastName',
-    },
-    {
-        type: 'list',
-        message: "What is the employee's role?",
-        choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Accountant', 'Legal Team Lead', 'Lawyer'],
-        name: 'empRoles',
-    },
-    /*     {
-            type: 'list',
-            message: "Who is the employee's manager?",
-            choices: ['None', 'Manager Choices'],
-            name: 'empMgr',
-        }, */
-];
-// console.log("Added {Employee Name} to the database.")
-
-const deleteEmp = [
-    {
-        type: 'list',
-        message: "Which employee do you want to remove?",
-        choices: ['Employee List', 'Need to figure out', 'How to dynamically generate', 'This list'],
-        name: 'removeEmp'
-    }
-];
-// console.log("Removed {Employee Name} from the database.")
-
-const updateRole = [
-    {
-        type: 'list',
-        message: "Which employee's role do you want to update?",
-        choices: ['Employee List'],
-        name: 'updateRole',
-    },
-    {
-        type: 'list',
-        message: "Please select the new role for this employee.",
+        message: "Which Role would you like to view?",
         choices: ['Role List'],
-        name: 'chooseRole',
-    }
-]
-// console.log("Updated {Employee Name}'s role.")
-
-const updateMgr = [
-    {
-        type: 'list',
-        message: "Which employee's manager do you want to update?",
-        choices: ['Employee List'],
-        name: 'updateMgr',
-    },
-    {
-        type: 'list',
-        message: "Which employee do you want to set as manager for the selected employee?",
-        choices: ['Employee List'],
-        name: 'chooseMgr',
+        name: 'viewRole',
     }
 ];
-// console.log("Updated {Employee Name}'s manager.")
 
+// Would like to add a question asking if they want to add another department.
+const addDpt = [
+    {
+        message: "What is the name of the new department?",
+        name: 'dptName',
+    }
+];
+// console.log("Added {dptName} as a department.")
+
+// Would like to add a question asking if they want to add another role.
 const addRole = [
     {
         message: "What is the title of the role?",
@@ -111,12 +57,37 @@ const addRole = [
 ];
 // console.log("Added {roleTitle} as a role.")
 
-const deleteRole = [
+// Would like to add a question asking if they want to add another employee.
+const addEmp = [
+    {
+        message: "What is the employee's first name?",
+        name: 'empFirstName',
+    },
+    {
+        message: "What is the employee's last name?",
+        name: 'empLastName',
+    },
     {
         type: 'list',
-        message: "Which role do you want to remove?",
-        choices: ['Role List'],
-        name: 'removeRole',
-    }
+        message: "What is the employee's role?",
+        choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Accountant', 'Legal Team Lead', 'Lawyer'],
+        name: 'empRoles',
+    },
 ];
-// console.log("Removed {removeRole} as a role.")
+// console.log("Added {Employee Name} to the database.")
+
+const updateRole = [
+    {
+        type: 'list',
+        message: "Which employee's role do you want to update?",
+        choices: ['Employee List'],
+        name: 'updateRole',
+    },
+    {
+        type: 'list',
+        message: "Please select the new role for this employee.",
+        choices: ['Role List'],
+        name: 'chooseRole',
+    }
+]
+// console.log("Updated {Employee Name}'s role.")

@@ -89,25 +89,6 @@ const empByRole = [
     }
 ];
 
-// Would like to add a question asking if they want to add another employee.
-const addEmp = [
-    {
-        message: "What is the employee's first name?",
-        name: 'empFirstName',
-    },
-    {
-        message: "What is the employee's last name?",
-        name: 'empLastName',
-    },
-    {
-        type: 'list',
-        message: "What is the employee's role?",
-        choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Accountant', 'Legal Team Lead', 'Lawyer'],
-        name: 'empRoles',
-    },
-];
-// console.log("Added {Employee Name} to the database.")
-
 const updateRole = [
     {
         type: 'list',
@@ -190,11 +171,41 @@ function addRole() {
     ]).then(res => {
         let title = res.roleTitle;
         let salary = res.roleSalary;
-        connection.query(`SELECT d_id FROM departments WHERE department = '${res.roleDpt}'`, (err, res) => {
+        connection.query(`SELECT d_id FROM departments WHERE department = '${res.roleDpt}';`, (err, res) => {
             if (err) throw err;
             connection.query(`INSERT INTO roles (title, salary, departments_id) VALUES ('${title}', '${salary}', ${res[0].d_id});`, (err, res) => {
                 if (err) throw err;
                 console.log(`Added ${title} as a new role.`);
+                init();
+            });
+        });
+    });
+};
+
+function addEmployee() {
+    inquirer.prompt([
+        {
+            message: "What is the employee's first name?",
+            name: 'firstName',
+        },
+        {
+            message: "What is the employee's last name?",
+            name: 'lastName',
+        },
+        {
+            type: 'list',
+            message: "What is the employee's role?",
+            choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Accountant', 'Legal Team Lead', 'Lawyer'],
+            name: 'empRoles',
+        },
+    ]).then(res => {
+        let fName = res.firstName;
+        let lName = res.lastName;
+        connection.query(`SELECT r_id FROM roles WHERE title = '${res.empRoles}';`, (err, res) => {
+            if (err) throw err;
+            connection.query(`INSERT INTO employees (first_name, last_name, roles_id) VALUES ('${fName}', '${lName}', ${res[0].r_id});`, (err, res) => {
+                if (err) throw err;
+                console.log(`Added ${fName} ${lName} as a new employee.`);
                 init();
             });
         });
@@ -223,6 +234,10 @@ function init() {
             case 'Add Role':
                 console.log("You chose to add a new role.");
                 addRole();
+                break;
+            case 'Add Employee':
+                console.log("You chose to add a new employee.");
+                addEmployee();
                 break;
             case 'Quit':
                 console.log("You chose 'Quit.'");

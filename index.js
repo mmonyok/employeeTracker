@@ -3,8 +3,8 @@
 // need to make sure salary is entered as a number with no commas.
 
 const inquirer = require('inquirer');
-// const connection = require('./config/connection');
 const cTable = require('console.table');
+const util = require('util');
 
 // This is all the code for connecting to the MySQL database.
 const mysql = require('mysql');
@@ -26,8 +26,9 @@ connection.connect((err) => {
     init();
 });
 
-/* const util = require('util');
-let dptPromise = util.promisify(connection.query);
+const cxnPromise = util.promisify(connection.query);
+
+/*
 async function test() {
     let response = await dptPromise('SELECT * FROM department;');
     console.table(response);
@@ -35,61 +36,32 @@ async function test() {
     //     array.push(response.department);
     // });
     // return array;
-} */
+}
 
 // test();
 
-
-// Main menu prompt; this will always populate after every prompt is complete.
-const menu = [
-    {
-        type: 'list',
-        message: "What would you like to do?",
-        choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Role', 'Add Department', 'Add Role', 'Add Employee', 'Update Employee Role', 'Quit'],
-        name: 'menuChoice',
+choices: async function () {
+    try {
+        console.log('hello');
+        let array = [];
+        let array = [
+            { d_id: 1, department: 'Sales' },
+            { d_id: 2, department: 'Engineering' },
+            { d_id: 3, department: 'Finance' },
+            { d_id: 4, department: 'Legal' },
+        ];
+        return array;
+        response = await dptPromise('SELECT * FROM department;');
+        response.forEach(() => {
+            array.push(response.department);
+        });
+        return array;
+    } catch (err) {
+        console.log(err);
     }
-];
+} */
 
-const empByDpt = [
-    {
-        type: 'list',
-        message: "Which department's employees would you like to view?",
-        choices: ['Sales', 'Engineering', 'Finance', 'Legal'],
-        /* choices: async function () {
-            try {
-                console.log('hello');
-                let array = [];
-                let array = [
-                    { d_id: 1, department: 'Sales' },
-                    { d_id: 2, department: 'Engineering' },
-                    { d_id: 3, department: 'Finance' },
-                    { d_id: 4, department: 'Legal' },
-                ];
-                return array;
-                response = await dptPromise('SELECT * FROM department;');
-                response.forEach(() => {
-                    array.push(response.department);
-                });
-                return array;
-            } catch (err) {
-                console.log(err);
-            }
-            // console.log(typeof response);
-        }, */
-        name: 'viewDpt',
-    }
-];
-
-const empByRole = [
-    {
-        type: 'list',
-        message: "Which Role would you like to view?",
-        choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Accountant', 'Legal Team Lead', 'Lawyer'],
-        name: 'viewRole',
-    }
-];
-
-const updateRole = [
+/* const updateRole = [
     {
         type: 'list',
         message: "Which employee's role do you want to update?",
@@ -102,7 +74,7 @@ const updateRole = [
         choices: ['Role List'],
         name: 'chooseRole',
     }
-]
+] */
 // console.log("Updated {Employee Name}'s role.")
 
 function viewAllEmployees() {
@@ -115,7 +87,17 @@ function viewAllEmployees() {
 };
 
 function viewEmployeeByDpt() {
-    inquirer.prompt(empByDpt).then(res => {
+    inquirer.prompt([
+        {
+            type: 'list',
+            message: "Which department's employees would you like to view?",
+            choices: ['Sales', 'Engineering', 'Finance', 'Legal'],
+/*             choices: async function () {
+
+            }, */
+            name: 'viewDpt',
+        }
+    ]).then(res => {
         const dpt = res.viewDpt;
         connection.query(`SELECT id, first_name, last_name, title, salary FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id WHERE departments.department = '${dpt}';`, (err, res) => {
             if (err) throw err;
@@ -126,7 +108,14 @@ function viewEmployeeByDpt() {
 };
 
 function viewEmployeeByRole() {
-    inquirer.prompt(empByRole).then(res => {
+    inquirer.prompt([
+        {
+            type: 'list',
+            message: "Which Role would you like to view?",
+            choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Accountant', 'Legal Team Lead', 'Lawyer'],
+            name: 'viewRole',
+        }
+    ]).then(res => {
         const role = res.viewRole;
         console.log(role);
         connection.query(`SELECT id, first_name, last_name, salary, department FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id WHERE roles.title = '${role}';`, (err, res) => {
@@ -213,7 +202,14 @@ function addEmployee() {
 };
 
 function init() {
-    inquirer.prompt(menu).then(res => {
+    inquirer.prompt([
+        {
+            type: 'list',
+            message: "What would you like to do?",
+            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Role', 'Add Department', 'Add Role', 'Add Employee', 'Update Employee Role', 'Quit'],
+            name: 'menuChoice',
+        }
+    ]).then(res => {
         switch (res.menuChoice) {
             case 'View All Employees':
                 console.log("You chose 'View All Employees'.");

@@ -1,6 +1,7 @@
 // ask about default for init() switch statement.
 // Why can't i have a separate connection.js file with raw sql instead of only with sequelize.
 // need to make sure salary is entered as a number with no commas.
+// ask about inner joins instead of left or right joins.
 
 const inquirer = require('inquirer');
 const cTable = require('console.table');
@@ -24,40 +25,9 @@ connection.connect((err) => {
     };
     console.log(`connected as id ${connection.threadId}`);
     init();
-    // test();
 });
 
 // const cxnPromise = util.promisify(connection.query);
-
-function test() {
-    connection.query('SELECT * FROM departments;', (err, res) => {
-        if (err) throw err;
-        console.log(res);
-        console.log("--------------------------");
-        console.table(res);
-    });
-}
-
-// choices: async function () {
-//     try {
-//         console.log('hello');
-//         let array = [];
-//         let array = [
-//             { d_id: 1, department: 'Sales' },
-//             { d_id: 2, department: 'Engineering' },
-//             { d_id: 3, department: 'Finance' },
-//             { d_id: 4, department: 'Legal' },
-//         ];
-//         return array;
-//         response = await dptPromise('SELECT * FROM department;');
-//         response.forEach(() => {
-//             array.push(response.department);
-//         });
-//         return array;
-//     } catch (err) {
-//         console.log(err);
-//     }
-// }
 
 function viewAllEmployees() {
     connection.query('SELECT id, first_name, last_name, title, department, salary FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id;', (err, res) => {
@@ -89,104 +59,28 @@ function viewEmployeeByDpt() {
         });
     });
 };
-    // inquirer.prompt([
-    /*         {
-                type: 'list',
-                message: "Which department's employees would you like to view?",
-                choices: ['Sales', 'Engineering', 'Finance', 'Legal'],
-                name: 'viewDpt',
-            } */
-
-    /* choices: async function () {
-        let array = [];
-        try {
-            console.log('How about this?');
-            let dpts = cxnPromise('SELECT department FROM departments;');
-            console.log("Did it work?");
-            console.log(dpts);
-            dpts.forEach((res) => {
-                array.push(res.department);
-                // console.log(res);
-                // console.log(array);
-            });
-            return array;
-        } catch (err) {
-            console.log(err);
-        }
-    }, */
-    //             choices: async () => {
-    //                 let array = [];
-    //                 let myPromise = await connection.query('SELECT * FROM departments;')
-    //                 console.log(myPromise);
-    // /*                 myPromise.forEach(d => {
-    //                     array.push(d.department);
-    //                 }); */
-    //                 return array;
-    //             },
-
-    //             // Why doesn't this work?
-    // /*             choices: () => {
-    //                 let array = [];
-    //                 connection.query('SELECT * FROM departments;', (err, res) => {
-    //                     if (err) throw err;
-    //                     console.log('this is res');
-    //                     console.log(res);
-    //                     console.log('end of res');
-    //                     res.forEach(() => {
-    //                         array.push(res[0].department);
-    //                     });
-    //                 });
-    //                 return array;
-    //             }, */
-
-    //             // This one also doesn't work.
-    // /*            choices: async () => {
-    //                 let array = [];
-    //                 let myPromise = await connection.query('SELECT * FROM departments;')
-    //                 console.log("myPromise");
-    //                 console.log(myPromise);
-    //                 myPromise.forEach(() => {
-    //                     array.push(myPromise.department);
-    //                 });
-    //                 console.log(array);
-    //                 return array;
-    //             },
-    //             choices: async () => {
-    //                 let array = [];
-    //                 let myPromise = await cxnPromise('SELECT * FROM departments;');
-    //                 console.log("myPromise");
-    //                 console.log(myPromise);
-    //             },
-    // name: 'viewDpt', 
-    // }
-    //     ]).then(res => {
-    //             const dpt = res.viewDpt;
-    //             connection.query(`SELECT id, first_name, last_name, title, salary FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id WHERE departments.department = '${dpt}';`, (err, res) => {
-    //                 if (err) throw err;
-    //                 console.table(res);
-    //                 init();
-    //             });
-    //         });
-    // };
 
     function viewEmployeeByRole() {
-        inquirer.prompt([
-            {
-                type: 'list',
-                message: "Which Role would you like to view?",
-                choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Accountant', 'Legal Team Lead', 'Lawyer'],
-                name: 'viewRole',
-            }
-        ]).then(res => {
-            const role = res.viewRole;
-            console.log(role);
-            connection.query(`SELECT id, first_name, last_name, salary, department FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id WHERE roles.title = '${role}';`, (err, res) => {
-                if (err) throw err;
-                console.table(res);
-                init();
+        connection.query('SELECT * FROM roles;', (err, res) => {
+            if (err) throw err;
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    message: "Which Role would you like to view?",
+                    choices: res.map((response) => response.title),
+                    name: 'viewRole',
+                }
+            ]).then(res => {
+                const role = res.viewRole;
+                console.log(role);
+                connection.query(`SELECT id, first_name, last_name, salary, department FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id WHERE roles.title = '${role}';`, (err, res) => {
+                    if (err) throw err;
+                    console.table(res);
+                    init();
+                });
             });
-        })
-    }
+        });
+    };
 
     function addDepartment() {
         inquirer.prompt([

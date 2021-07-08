@@ -10,6 +10,8 @@ CREATE TABLE departments (
     PRIMARY KEY(d_id)
 );
 
+DROP TABLE departments;
+
 CREATE TABLE roles (
 	r_id INT NOT NULL AUTO_INCREMENT,
     title VARCHAR(30),

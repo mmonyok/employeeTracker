@@ -1,5 +1,6 @@
 // ask about default for init() switch statement.
 // Why can't i have a separate connection.js file with raw sql instead of only with sequelize.
+// need to make sure salary is entered as a number with no commas.
 
 const inquirer = require('inquirer');
 // const connection = require('./config/connection');
@@ -88,27 +89,6 @@ const empByRole = [
     }
 ];
 
-// console.log("Added {dptName} as a department.")
-
-// Would like to add a question asking if they want to add another role.
-const addRole = [
-    {
-        message: "What is the title of the role?",
-        name: 'roleTitle',
-    },
-    {
-        type: 'list',
-        message: "Please select the department for this role.",
-        choices: ['Department List'],
-        name: 'roleDpt',
-    },
-    {
-        message: "What is the salary for this role?",
-        name: 'roleSalary',
-    }
-];
-// console.log("Added {roleTitle} as a role.")
-
 // Would like to add a question asking if they want to add another employee.
 const addEmp = [
     {
@@ -183,11 +163,43 @@ function addDepartment() {
             name: 'dptName',
         }
     ]).then(res => {
-        connection.query(`INSERT INTO departments (department) VALUES ('${res.dptName}');`);
-        console.log(`Added ${res.dptName} as a department.`);
-        init();
+        connection.query(`INSERT INTO departments (department) VALUES ('${res.dptName}');`, (err, res) => {
+            if (err) throw err;
+            console.log(`Added ${res.dptName} as a new department.`);
+            init();
+        });
     })
 }
+
+function addRole() {
+    inquirer.prompt([
+        {
+            message: "What is the title of the role?",
+            name: 'roleTitle',
+        },
+        {
+            message: "What is the salary for this role?",
+            name: 'roleSalary',
+        },
+        {
+            type: 'list',
+            message: "Please select the department for this role.",
+            choices: ['Sales', 'Engineering', 'Finance', 'Legal'],
+            name: 'roleDpt',
+        }
+    ]).then(res => {
+        let title = res.roleTitle;
+        let salary = res.roleSalary;
+        connection.query(`SELECT d_id FROM departments WHERE department = '${res.roleDpt}'`, (err, res) => {
+            if (err) throw err;
+            connection.query(`INSERT INTO roles (title, salary, departments_id) VALUES ('${title}', '${salary}', ${res[0].d_id});`, (err, res) => {
+                if (err) throw err;
+                console.log(`Added ${title} as a new role.`);
+                init();
+            });
+        });
+    });
+};
 
 function init() {
     inquirer.prompt(menu).then(res => {
@@ -201,15 +213,19 @@ function init() {
                 viewEmployeeByDpt();
                 break;
             case 'View All Employees By Role':
-                console.log("You chose to view employees by role.")
+                console.log("You chose to view employees by role.");
                 viewEmployeeByRole();
                 break;
             case 'Add Department':
-                console.log("You chose to add a department.");
+                console.log("You chose to add a new department.");
                 addDepartment();
                 break;
+            case 'Add Role':
+                console.log("You chose to add a new role.");
+                addRole();
+                break;
             case 'Quit':
-                console.log("You chose 'Quit.'")
+                console.log("You chose 'Quit.'");
                 connection.end();
         }
     })

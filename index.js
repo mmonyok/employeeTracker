@@ -86,9 +86,10 @@ function addDepartment() {
             name: 'dptName',
         }
     ]).then(res => {
+        let added = res.dptName;
         connection.query(`INSERT INTO departments (department) VALUES ('${res.dptName}');`, (err, res) => {
             if (err) throw err;
-            console.log(`Added ${res.dptName} as a new department.`);
+            console.log(chalk.black.bgGreen(`Added ${added} as a new department.`));
             init();
         });
     })
@@ -110,7 +111,7 @@ function deleteDepartment() {
             connection.query(`DELETE FROM departments WHERE department = '${deleted}';`, (err, res) => {
                 if (err) throw err;
 
-                console.log(chalk.black.bgRed(`Deleted ${deleted} from the departments database.`));
+                console.log(chalk.black.bgRed(`Deleted ${deleted} from departments.`));
                 init();
             });
         });

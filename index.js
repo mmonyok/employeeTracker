@@ -6,13 +6,12 @@
 // If department is null how do i get it to show up in the list as "none",
 
 const inquirer = require('inquirer');
-const cTable = require('console.table');
-const chalk = require('chalk');
-
-// This is all the code for connecting to the MySQL database.
 const mysql = require('mysql');
+const chalk = require('chalk');
+require('console.table');
 require('dotenv').config();
 
+// This is all the code for connecting to the MySQL database.
 const connection = mysql.createConnection({
     host: process.env.DB_HOST,
     port: 3306,

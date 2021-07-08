@@ -49,7 +49,7 @@ function viewEmployeeByDpt() {
             }
         ]).then(res => {
             const dpt = res.viewDpt;
-            connection.query(`SELECT id, first_name, last_name, title, salary FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id WHERE departments.department = '${dpt}';`, (err, res) => {
+            connection.query(`SELECT id, first_name, last_name, title, salary FROM employees LEFT JOIN roles ON employees.roles_id = roles.r_id LEFT JOIN departments ON roles.departments_id = departments.d_id WHERE departments.department = '${dpt}';`, (err, res) => {
                 if (err) throw err;
                 console.table(res);
                 init();
@@ -70,7 +70,7 @@ function viewEmployeeByRole() {
             }
         ]).then(res => {
             const role = res.viewRole;
-            connection.query(`SELECT id, first_name, last_name, salary, department FROM employees INNER JOIN roles ON employees.roles_id = roles.r_id INNER JOIN departments ON roles.departments_id = departments.d_id WHERE roles.title = '${role}';`, (err, res) => {
+            connection.query(`SELECT id, first_name, last_name, salary, department FROM employees LEFT JOIN roles ON employees.roles_id = roles.r_id LEFT JOIN departments ON roles.departments_id = departments.d_id WHERE roles.title = '${role}';`, (err, res) => {
                 if (err) throw err;
                 console.table(res);
                 init();
@@ -144,7 +144,7 @@ function addRole() {
                 if (err) throw err;
                 connection.query(`INSERT INTO roles (title, salary, departments_id) VALUES ('${title}', '${salary}', ${res[0].d_id});`, (err, res) => {
                     if (err) throw err;
-                    console.log(`Added ${title} as a new role.`);
+                    console.log(chalk.black.bgGreen(`Added ${title} as a new role.`));
                     init();
                 });
             });
@@ -168,7 +168,7 @@ function deleteRole() {
             connection.query(`DELETE FROM roles WHERE title = '${deleted}';`, (err, res) => {
                 if (err) throw err;
 
-                console.log(chalk.black.bgRed(`Deleted ${deleted} from the roles database.`));
+                console.log(chalk.black.bgRed(`Deleted ${deleted} from roles.`));
                 init();
             });
         });
@@ -200,7 +200,7 @@ function addEmployee() {
                 if (err) throw err;
                 connection.query(`INSERT INTO employees (first_name, last_name, roles_id) VALUES ('${fName}', '${lName}', ${res[0].r_id});`, (err, res) => {
                     if (err) throw err;
-                    console.log(`Added ${fName} ${lName} as a new employee.`);
+                    console.log(chalk.black.bgGreen(`Added ${fName} ${lName} as a new employee.`));
                     init();
                 });
             });
@@ -258,7 +258,7 @@ function updateRole() {
 
                     connection.query(`UPDATE employees SET roles_id = ${res[0].r_id} WHERE first_name = '${empFirst}' AND last_name = '${empLast}';`, (err, res) => {
                         if (err) throw err;
-                        console.log(`Updated ${data.updateRole}'s role to ${data.chooseRole}.`);
+                        console.log(chalk.black.bgCyan(`Updated ${data.updateRole}'s role to ${data.chooseRole}.`));
                         init();
                     });
                 });

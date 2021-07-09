@@ -30,6 +30,10 @@ SELECT * FROM departments;
 SELECT * FROM roles;
 SELECT * FROM employees;
 
+SELECT SUM(r.salary) AS Total_Budget FROM roles AS r WHERE r.departments_id = 2;
+
+SELECT d.department AS Department, SUM(r.salary) AS Total_Budget FROM roles AS r LEFT JOIN departments AS d ON r.departments_id = d.d_id GROUP BY department ORDER BY Total_Budget DESC;
+
 SELECT CONCAT(e.first_name, ' ', e.last_name) AS manager
 FROM employees AS e
 WHERE e.is_mgr = true;

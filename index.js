@@ -1,7 +1,5 @@
-// ask about default for init() switch statement.
 // Why can't i have a separate connection.js file with raw sql instead of only with sequelize.
 // need to make sure salary is entered as a number with no commas.
-// ask about inner joins instead of left or right joins.
 // Difference between rawlist and list.
 // If department is null how do i get it to show up in the list as "none",
 
@@ -29,10 +27,10 @@ connection.connect((err) => {
 });
 
 function viewAllEmployees() {
-    connection.query('SELECT id, first_name, last_name, title, department, salary FROM employees LEFT JOIN roles ON employees.roles_id = roles.r_id LEFT JOIN departments ON roles.departments_id = departments.d_id;', (err, res) => {
+    connection.query("SELECT e1.id, e1.first_name, e1.last_name, r.title, d.department, r.salary, CONCAT(e2.first_name, ' ', e2.last_name) AS manager    FROM employees AS e1 LEFT JOIN employees AS e2 ON e1.mgr_id = e2.id LEFT JOIN roles AS r ON e1.roles_id = r.r_id LEFT JOIN departments AS d ON r.departments_id = d.d_id;", (err, res) => {
         if (err) throw err;
         console.table(res);
-        init();
+        menu();
     });
 };
 
@@ -52,11 +50,13 @@ function viewEmployeeByDpt() {
             connection.query(`SELECT id, first_name, last_name, title, salary FROM employees LEFT JOIN roles ON employees.roles_id = roles.r_id LEFT JOIN departments ON roles.departments_id = departments.d_id WHERE departments.department = '${dpt}';`, (err, res) => {
                 if (err) throw err;
                 console.table(res);
-                init();
+                menu();
             });
         });
     });
 };
+
+
 
 function viewEmployeeByRole() {
     connection.query('SELECT * FROM roles;', (err, res) => {
@@ -73,7 +73,7 @@ function viewEmployeeByRole() {
             connection.query(`SELECT id, first_name, last_name, salary, department FROM employees LEFT JOIN roles ON employees.roles_id = roles.r_id LEFT JOIN departments ON roles.departments_id = departments.d_id WHERE roles.title = '${role}';`, (err, res) => {
                 if (err) throw err;
                 console.table(res);
-                init();
+                menu();
             });
         });
     });
@@ -90,7 +90,7 @@ function addDepartment() {
         connection.query(`INSERT INTO departments (department) VALUES ('${res.dptName}');`, (err, res) => {
             if (err) throw err;
             console.log(chalk.black.bgGreen(`Added ${added} as a new department.`));
-            init();
+            menu();
         });
     })
 }
@@ -112,7 +112,7 @@ function deleteDepartment() {
                 if (err) throw err;
 
                 console.log(chalk.black.bgRed(`Deleted ${deleted} from departments.`));
-                init();
+                menu();
             });
         });
     });
@@ -145,7 +145,7 @@ function addRole() {
                 connection.query(`INSERT INTO roles (title, salary, departments_id) VALUES ('${title}', '${salary}', ${res[0].d_id});`, (err, res) => {
                     if (err) throw err;
                     console.log(chalk.black.bgGreen(`Added ${title} as a new role.`));
-                    init();
+                    menu();
                 });
             });
         });
@@ -169,7 +169,7 @@ function deleteRole() {
                 if (err) throw err;
 
                 console.log(chalk.black.bgRed(`Deleted ${deleted} from roles.`));
-                init();
+                menu();
             });
         });
     });
@@ -201,7 +201,7 @@ function addEmployee() {
                 connection.query(`INSERT INTO employees (first_name, last_name, roles_id) VALUES ('${fName}', '${lName}', ${res[0].r_id});`, (err, res) => {
                     if (err) throw err;
                     console.log(chalk.black.bgGreen(`Added ${fName} ${lName} as a new employee.`));
-                    init();
+                    menu();
                 });
             });
         });
@@ -226,7 +226,7 @@ function deleteEmployee() {
             connection.query(`DELETE FROM employees WHERE first_name = '${empFirst}' AND last_name = '${empLast}';`, (err, res) => {
                 if (err) throw err;
                 console.log(chalk.black.bgRed(`Deleted employee, ${data.delEmp}, from the database.`));
-                init();
+                menu();
             });
         });
     });
@@ -259,7 +259,7 @@ function updateRole() {
                     connection.query(`UPDATE employees SET roles_id = ${res[0].r_id} WHERE first_name = '${empFirst}' AND last_name = '${empLast}';`, (err, res) => {
                         if (err) throw err;
                         console.log(chalk.black.bgCyan(`Updated ${data.updateRole}'s role to ${data.chooseRole}.`));
-                        init();
+                        menu();
                     });
                 });
             });
@@ -267,12 +267,16 @@ function updateRole() {
     });
 };
 
-function init() {
+// These are shortcuts
+let white = chalk.white.bold;
+let cyan = chalk.cyan.bold;
+
+function menu() {
     inquirer.prompt([
         {
             type: 'list',
             message: "What would you like to do?",
-            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Role', 'Add Department', 'Delete Department', 'Add Role', 'Delete Role', 'Add Employee', 'Delete Employee', 'Update Employee Role', 'Quit'],
+            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees By Role', 'Add Department', 'Delete Department', 'Add Role', 'Delete Role', 'Add Employee', 'Delete Employee', 'Update Employee Role', 'Quit'],
             name: 'menuChoice',
         }
     ]).then(res => {
@@ -282,6 +286,9 @@ function init() {
                 break;
             case 'View All Employees By Department':
                 viewEmployeeByDpt();
+                break;
+            case 'View All Employees By Manager':
+                viewEmployeeByMgr();
                 break;
             case 'View All Employees By Role':
                 viewEmployeeByRole();
@@ -312,4 +319,26 @@ function init() {
                 connection.end();
         };
     });
+};
+
+function init() {
+    console.log(white.bold(`
+ _______________________________________________________________________________________
+|` + cyan(`       _______  __   __  _______  ___      _______  __   __  _______  _______          `) + `|
+|` + cyan(`      |       ||  |_|  ||       ||   |    |       ||  | |  ||       ||       |         `) + `|
+|` + cyan(`      |    ___||       ||    _  ||   |    |   _   ||  |_|  ||    ___||    ___|         `) + `|
+|` + cyan(`      |   |___ |       ||   |_| ||   |    |  | |  ||       ||   |___ |   |___          `) + `|
+|` + cyan(`      |    ___||       ||    ___||   |___ |  |_|  ||_     _||    ___||    ___|         `) + `|
+|` + cyan(`      |   |___ | ||_|| ||   |    |       ||       |  |   |  |   |___ |   |___          `) + `|
+|` + cyan(`      |_______||_|   |_||___|    |_______||_______|  |___|  |_______||_______|         `) + `|
+|` + cyan(`   _______  _______  __    _  _______  ______    _______  _______  _______  ______     `) + `|
+|` + cyan(`  |       ||       ||  |  | ||       ||    _ |  |   _   ||       ||       ||    _ |    `) + `|
+|` + cyan(`  |    ___||    ___||   |_| ||    ___||   | ||  |  |_|  ||_     _||   _   ||   | ||    `) + `|
+|` + cyan(`  |   | __ |   |___ |       ||   |___ |   |_||_ |       |  |   |  |  | |  ||   |_||_   `) + `|
+|` + cyan(`  |   ||  ||    ___||  _    ||    ___||    __  ||       |  |   |  |  |_|  ||    __  |  `) + `|
+|` + cyan(`  |   |_| ||   |___ | | |   ||   |___ |   |  | ||   _   |  |   |  |       ||   |  | |  `) + `|
+|` + cyan(`  |_______||_______||_|  |__||_______||___|  |_||__| |__|  |___|  |_______||___|  |_|  `) + `|
+|_______________________________________________________________________________________|
+`));
+    menu();
 };

@@ -257,6 +257,54 @@ function deleteEmployee() {
     });
 };
 
+function updateManager() {
+    connection.query("SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employees;", (err, res) => {
+        if (err) throw err;
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                message: "Which employee's manager do you want to update?",
+                choices: res.map((response) => {
+                    return {
+                        name: response.name,
+                        value: {
+                            id: response.id,
+                            name: response.name
+                        }
+                    }
+                }),
+                name: 'updateEmp',
+            },
+            {
+                type: 'list',
+                message: "Who should be assigned as your employee's new manager?",
+                choices: res.map((response) => {
+                    return {
+                        name: response.name,
+                        value: {
+                            id: response.id,
+                            name: response.name
+                        }
+                    }
+                }),
+                name: 'updateMgr',
+            }
+        ]).then(data => {
+            console.log(data);
+            console.log(data.updateMgr.id);
+            console.log(data.updateMgr.name);
+            connection.query(`UPDATE employees SET mgr_id = ${data.updateMgr.id} WHERE id = ${data.updateEmp.id};`, (err, res) => {
+                connection.query(`UPDATE employees SET is_mgr = true WHERE is_mgr = false AND id = ${data.updateMgr.id};`, (err, res) => {
+                    if (err) throw err;
+                    console.log(chalk.black.bgCyan(`Updated ${data.updateEmp.name}'s manager to ${data.updateMgr.name}.`));
+                    menu();
+                });
+            });
+        });
+    });
+};
+
 function updateRole() {
     connection.query('SELECT * FROM roles;', (err, roles) => {
         connection.query('SELECT * FROM employees;', (err, employees) => {
@@ -297,7 +345,7 @@ function menu() {
         {
             type: 'list',
             message: "What would you like to do?",
-            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees By Role', 'Add Department', 'Delete Department', 'Add Role', 'Delete Role', 'Add Employee', 'Delete Employee', 'Update Employee Role', 'Quit'],
+            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees By Role', 'Add Department', 'Delete Department', 'Add Role', 'Delete Role', 'Add Employee', 'Delete Employee', 'Update Employee Manager', 'Update Employee Role', 'Quit'],
             name: 'menuChoice',
         }
     ]).then(res => {
@@ -331,6 +379,9 @@ function menu() {
                 break;
             case 'Delete Employee':
                 deleteEmployee();
+                break;
+            case 'Update Employee Manager':
+                updateManager();
                 break;
             case 'Update Employee Role':
                 updateRole();

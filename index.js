@@ -1,13 +1,14 @@
-// Why can't i have a separate connection.js file with raw sql instead of only with sequelize.
 // need to make sure salary is entered as a number with no commas.
-// Difference between rawlist and list.
-// If department is null how do i get it to show up in the list as "none",
 
 const inquirer = require('inquirer');
 const mysql = require('mysql');
 const chalk = require('chalk');
 require('console.table');
 require('dotenv').config();
+
+// These are shortcuts for the text art.
+let white = chalk.white.bold;
+let cyan = chalk.cyan.bold;
 
 // This is all the code for connecting to the MySQL database.
 const connection = mysql.createConnection({
@@ -56,7 +57,31 @@ function viewEmployeeByDpt() {
     });
 };
 
+function viewEmployeeByMgr() {
+    connection.query("SELECT CONCAT(e.first_name, ' ', e.last_name) AS manager, e.id FROM employees AS e WHERE e.is_mgr = true;", (err, res) => {
+        if (err) throw err;
 
+        inquirer.prompt([
+            {
+                type: 'list',
+                message: "Which manager's employees would you like to view?",
+                choices: res.map((response) => {
+                    return {
+                        name: response.manager,
+                        value: response.id
+                    }
+                }),
+                name: 'mgrName',
+            }
+        ]).then(res => {
+            connection.query(`SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS name, r.title, d.department, r.salary FROM employees AS e LEFT JOIN roles AS r ON e.roles_id = r.r_id LEFT JOIN departments AS d ON r.departments_id = d.d_id WHERE e.mgr_id = ${res.mgrName};`, (err, res) => {
+                if (err) throw err;
+                console.table(res);
+                menu();
+            });
+        });
+    });
+};
 
 function viewEmployeeByRole() {
     connection.query('SELECT * FROM roles;', (err, res) => {
@@ -266,10 +291,6 @@ function updateRole() {
         });
     });
 };
-
-// These are shortcuts
-let white = chalk.white.bold;
-let cyan = chalk.cyan.bold;
 
 function menu() {
     inquirer.prompt([

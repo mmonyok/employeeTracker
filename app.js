@@ -27,6 +27,7 @@ connection.connect((err) => {
     init();
 });
 
+// The following functions allow you to view employees by different parameters.
 function viewAllEmployees() {
     connection.query("SELECT e1.id, e1.first_name, e1.last_name, r.title, d.department, r.salary, CONCAT(e2.first_name, ' ', e2.last_name) AS manager    FROM employees AS e1 LEFT JOIN employees AS e2 ON e1.mgr_id = e2.id LEFT JOIN roles AS r ON e1.roles_id = r.r_id LEFT JOIN departments AS d ON r.departments_id = d.d_id;", (err, res) => {
         if (err) throw err;
@@ -104,6 +105,7 @@ function viewEmployeeByRole() {
     });
 };
 
+// The following functions allow you to add to your database (departments, roles, and employees).
 function addDepartment() {
     inquirer.prompt([
         {
@@ -119,29 +121,6 @@ function addDepartment() {
         });
     })
 }
-
-function deleteDepartment() {
-    connection.query('SELECT * FROM departments;', (err, res) => {
-        if (err) throw err;
-
-        inquirer.prompt([
-            {
-                type: 'list',
-                message: "What is the name of the department you would like to delete?",
-                choices: res.map((response) => response.department),
-                name: 'delDpt',
-            }
-        ]).then(data => {
-            let deleted = data.delDpt;
-            connection.query(`DELETE FROM departments WHERE department = '${deleted}';`, (err, res) => {
-                if (err) throw err;
-
-                console.log(chalk.black.bgRed(`Deleted ${deleted} from departments.`));
-                menu();
-            });
-        });
-    });
-};
 
 function addRole() {
     connection.query('SELECT * FROM departments;', (err, res) => {
@@ -172,29 +151,6 @@ function addRole() {
                     console.log(chalk.black.bgGreen(`Added ${title} as a new role.`));
                     menu();
                 });
-            });
-        });
-    });
-};
-
-function deleteRole() {
-    connection.query('SELECT * FROM roles;', (err, res) => {
-        if (err) throw err;
-
-        inquirer.prompt([
-            {
-                type: 'list',
-                message: "What is the name of the role you would like to delete?",
-                choices: res.map((response) => response.title),
-                name: 'delRole',
-            }
-        ]).then(data => {
-            let deleted = data.delRole;
-            connection.query(`DELETE FROM roles WHERE title = '${deleted}';`, (err, res) => {
-                if (err) throw err;
-
-                console.log(chalk.black.bgRed(`Deleted ${deleted} from roles.`));
-                menu();
             });
         });
     });
@@ -233,6 +189,53 @@ function addEmployee() {
     });
 };
 
+// The following functions allow you to delete from your database (departments, roles, and employees).
+function deleteDepartment() {
+    connection.query('SELECT * FROM departments;', (err, res) => {
+        if (err) throw err;
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                message: "What is the name of the department you would like to delete?",
+                choices: res.map((response) => response.department),
+                name: 'delDpt',
+            }
+        ]).then(data => {
+            let deleted = data.delDpt;
+            connection.query(`DELETE FROM departments WHERE department = '${deleted}';`, (err, res) => {
+                if (err) throw err;
+
+                console.log(chalk.black.bgRed(`Deleted ${deleted} from departments.`));
+                menu();
+            });
+        });
+    });
+};
+
+function deleteRole() {
+    connection.query('SELECT * FROM roles;', (err, res) => {
+        if (err) throw err;
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                message: "What is the name of the role you would like to delete?",
+                choices: res.map((response) => response.title),
+                name: 'delRole',
+            }
+        ]).then(data => {
+            let deleted = data.delRole;
+            connection.query(`DELETE FROM roles WHERE title = '${deleted}';`, (err, res) => {
+                if (err) throw err;
+
+                console.log(chalk.black.bgRed(`Deleted ${deleted} from roles.`));
+                menu();
+            });
+        });
+    });
+};
+
 function deleteEmployee() {
     connection.query('SELECT * FROM employees;', (err, employees) => {
         if (err) throw err;
@@ -257,6 +260,7 @@ function deleteEmployee() {
     });
 };
 
+// The following functions allow you to update your employee's roles or managers.
 function updateManager() {
     connection.query("SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employees;", (err, res) => {
         if (err) throw err;
@@ -340,6 +344,7 @@ function updateRole() {
     });
 };
 
+// This function is the main menu that will run all other functions based on the selection.
 function menu() {
     inquirer.prompt([
         {
@@ -393,6 +398,7 @@ function menu() {
     });
 };
 
+// This function will log out the text art on application start and then run the menu() function that runs the rest of the application.
 function init() {
     console.log(white.bold(`
  _______________________________________________________________________________________

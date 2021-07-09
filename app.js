@@ -103,6 +103,16 @@ function viewEmployeeByRole() {
     });
 };
 
+// This function allows you to see all departments' budgets based on total cost of employees in that department.
+function viewDepartmentBudget() {
+    connection.query('SELECT d.department AS Department, SUM(r.salary) AS Total_Budget FROM roles AS r LEFT JOIN departments AS d ON r.departments_id = d.d_id GROUP BY department ORDER BY Total_Budget DESC;', (err, res) => {
+        if (err) throw err;
+        console.log(res);
+        console.table(res);
+        menu();
+    });
+};
+
 // The following functions allow you to add to your database (departments, roles, and employees).
 function addDepartment() {
     inquirer.prompt([

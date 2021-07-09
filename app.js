@@ -1,5 +1,3 @@
-// need to make sure salary is entered as a number with no commas.
-
 const inquirer = require('inquirer');
 const mysql = require('mysql');
 const chalk = require('chalk');
@@ -29,8 +27,9 @@ connection.connect((err) => {
 
 // The following functions allow you to view employees by different parameters.
 function viewAllEmployees() {
-    connection.query("SELECT e1.id, e1.first_name, e1.last_name, r.title, d.department, r.salary, CONCAT(e2.first_name, ' ', e2.last_name) AS manager    FROM employees AS e1 LEFT JOIN employees AS e2 ON e1.mgr_id = e2.id LEFT JOIN roles AS r ON e1.roles_id = r.r_id LEFT JOIN departments AS d ON r.departments_id = d.d_id;", (err, res) => {
+    connection.query("SELECT e1.id, e1.first_name, e1.last_name, r.title, d.department, r.salary, CONCAT(e2.first_name, ' ', e2.last_name) AS manager FROM employees AS e1 LEFT JOIN employees AS e2 ON e1.mgr_id = e2.id LEFT JOIN roles AS r ON e1.roles_id = r.r_id LEFT JOIN departments AS d ON r.departments_id = d.d_id;", (err, res) => {
         if (err) throw err;
+        console.log(`\n`);
         console.table(res);
         menu();
     });
@@ -50,6 +49,7 @@ function viewEmployeeByDpt() {
         ]).then(res => {
             connection.query(`SELECT id, first_name, last_name, title, salary FROM employees LEFT JOIN roles ON employees.roles_id = roles.r_id LEFT JOIN departments ON roles.departments_id = departments.d_id WHERE departments.department = '${res.viewDpt}';`, (err, res) => {
                 if (err) throw err;
+                console.log(`\n`);
                 console.table(res);
                 menu();
             });
@@ -76,6 +76,7 @@ function viewEmployeeByMgr() {
         ]).then(res => {
             connection.query(`SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS name, r.title, d.department, r.salary FROM employees AS e LEFT JOIN roles AS r ON e.roles_id = r.r_id LEFT JOIN departments AS d ON r.departments_id = d.d_id WHERE e.mgr_id = ${res.mgrName};`, (err, res) => {
                 if (err) throw err;
+                console.log(`\n`);
                 console.table(res);
                 menu();
             });
@@ -96,6 +97,7 @@ function viewEmployeeByRole() {
         ]).then(res => {
             connection.query(`SELECT id, first_name, last_name, salary, department FROM employees LEFT JOIN roles ON employees.roles_id = roles.r_id LEFT JOIN departments ON roles.departments_id = departments.d_id WHERE roles.title = '${res.viewRole}';`, (err, res) => {
                 if (err) throw err;
+                console.log(`\n`);
                 console.table(res);
                 menu();
             });
@@ -107,7 +109,7 @@ function viewEmployeeByRole() {
 function viewDepartmentBudget() {
     connection.query('SELECT d.department AS Department, SUM(r.salary) AS Total_Budget FROM roles AS r LEFT JOIN departments AS d ON r.departments_id = d.d_id GROUP BY department ORDER BY Total_Budget DESC;', (err, res) => {
         if (err) throw err;
-        console.log(res);
+        console.log(`\n`);
         console.table(res);
         menu();
     });

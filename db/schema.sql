@@ -29,20 +29,3 @@ CREATE TABLE employees (
 SELECT * FROM departments;
 SELECT * FROM roles;
 SELECT * FROM employees;
-
-SELECT SUM(r.salary) AS Total_Budget FROM roles AS r WHERE r.departments_id = 2;
-
-SELECT d.department AS Department, SUM(r.salary) AS Total_Budget FROM roles AS r LEFT JOIN departments AS d ON r.departments_id = d.d_id GROUP BY department ORDER BY Total_Budget DESC;
-
-SELECT CONCAT(e.first_name, ' ', e.last_name) AS manager
-FROM employees AS e
-WHERE e.is_mgr = true;
-
-SELECT e1.id, e1.first_name, e1.last_name, r.title, d.department, r.salary, CONCAT(e2.first_name, ' ', e2.last_name) AS manager
-FROM employees AS e1
-LEFT JOIN employees AS e2
-ON e1.mgr_id = e2.id
-LEFT JOIN roles AS r
-ON e1.roles_id = r.r_id
-LEFT JOIN departments AS d
-ON r.departments_id = d.d_id;
